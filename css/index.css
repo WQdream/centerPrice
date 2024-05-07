@@ -1,0 +1,65 @@
+.uploadStyle{
+    display: flex;
+    justify-content: center;
+}
+
+.tableStyle{
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+.handleShow{
+    /* float: right; */
+    position: absolute;
+    top: 80px;
+    right: 0;
+    width: 50%;
+    height: 568px;
+    overflow: auto;
+    /* border: 1px solid red; */
+}
+
+.handleShowContent{
+    margin-top: 10px;
+    margin-left: 20px;
+}
+
+.handleShowTop p{
+    display: inline-block;
+    text-align: center;
+    font-weight: bold;
+}   
+.handleShowTop1{
+    width: 120px;
+} 
+.handleShowTop2{
+    width: 290px;
+
+} 
+.handleShowTop3{
+    width: 180px;
+
+} 
+
+.allPrice{
+    font-weight: bold;
+    font-size: 22px;
+    float: right;
+    margin-right: 350px;
+}
+
+.keyWord{
+    display: inline-block;
+    width: 200px;
+}
+
+.tool{
+    margin-bottom: 30px;
+}
+
+.product_name{
+    display: inline-block;
+    width: 150px;
+}
+
+

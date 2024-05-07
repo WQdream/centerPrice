@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小秦专属</title>
+    <link rel="icon" href="./images/wsq.ico">
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.7.9/vue.min.js"></script>
+    <!-- <script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.14/index.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.14/theme-chalk/index.min.css" rel="stylesheet"> -->
+    <!-- 引入样式 -->
+    <!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
+    <!-- <link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.14/theme-chalk/index.min.css" rel="stylesheet"> -->
+
+    <link rel="stylesheet" href="https://cdn.staticfile.org/element-ui/2.15.9/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <!-- <script src="https://unpkg.com/element-ui/lib/index.js"></script> -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.15.14/index.min.js"></script>
+    <script src="./js/xlsx.full.min.js"></script>
+    <script src="./js/common.js"></script>
+    <link href="./css/index.css" rel="stylesheet">
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/dexie/3.2.4/dexie.min.js"></script>
+
+
+
+</head>
+
+<body>
+    <!-- 创建一个根元素 -->
+    <div class="app" id="app">
+        <div class="tool">
+            <el-input v-model="keyWord" placeholder="请输入内容" class="keyWord" @keyup.enter.native="handleSearch"></el-input>
+            <el-button type="warning" @click="handleSearch">搜索</el-button>
+            <el-button type="warning" @click="handleReset">重置</el-button>
+            <el-button type="primary" @click="handleAddSingle">添加</el-button>
+            <el-button type="primary" @click="handleUp">上传文件</el-button>
+            <el-button @click="handleDownload">下载模板</el-button>
+            <el-button type="danger" @click="handleClearData">清空数据</el-button>
+
+            <div class="allPrice">
+                <span>总价：{{allPrice}}</span>
+
+            </div>
+
+        </div>
+
+
+
+        <div>
+            <el-table border stripe ref="multipleTable" :data="tableDataHome" tooltip-effect="dark" style="width: 49%"
+                @selection-change="handleSelectionHomeChange">
+                <el-table-column type="selection" width="55">
+                </el-table-column>
+                <el-table-column label="产品名称" width="200">
+                    <template slot-scope="scope">{{ scope.row.product_name }}</template>
+                </el-table-column>
+                <el-table-column prop="price" label="零售价格" width="200">
+                </el-table-column>
+                <el-table-column label="操作" align="center">
+                    <template slot-scope="scope">
+                        <el-button size="mini" type="primary" @click="handleAdd(scope.$index, scope.row)">添加</el-button>
+                        <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                        <el-popconfirm @confirm="handleDelete(scope.$index, scope.row)" title="确定删除吗？">
+                            <el-button size="mini" type="danger" slot="reference">删除</el-button>
+                        </el-popconfirm>
+                        <!-- <el-button size="mini" type="danger"
+                            @click="handleDelete(scope.$index, scope.row)">删除</el-button> -->
+                    </template>
+                </el-table-column>
+            </el-table>
+
+            <div class="tableStyle">
+                <el-pagination @current-change="handleHomeCurrentChange" background layout="prev, pager, next"
+                    :page-size="rows" :current-page.sync="pageHome" :total="totalHome">
+                </el-pagination>
+            </div>
+        </div>
+        <div class="handleShow">
+            <div class="handleShowTop">
+                <p class="handleShowTop1">中药名</p>
+                <p class="handleShowTop2">零售价格</p>
+                <p class="handleShowTop3">中药克数</p>
+                <el-button size="mini" type="primary" @click="handleDelAll()">清空</el-button>
+
+            </div>
+            <div v-for="(item,index) in selectDataList" :key="item.id" class="handleShowContent">
+                <span class="product_name">{{index + 1 +'、'+item.product_name}}</span>
+                <el-input style="margin-right: 40px;" v-model="item.price" placeholder="请输入零售价格" @input="changeValue()"
+                    class="keyWord"></el-input>
+                <el-input v-model="item.weight" placeholder="请输入中药克数" class="keyWord" @input="changeValue()"></el-input>
+                <i title="删除" @click="handleSelectDel(item)" class="el-icon-delete"
+                    style="margin-left: 10px;font-size: 20px;cursor: pointer;"></i>
+            </div>
+        </div>
+        <!-- 上传弹窗 -->
+        <el-dialog title="中药导入" :visible.sync="dialogVisible" width="40%" :before-close="handleClose">
+            <div class="uploadStyle" v-show="ifShow">
+                <el-upload class="upload-demo" drag action="https://jsonplaceholder.typicode.com/posts/"
+                    :before-upload="before" multiple>
+                    <i class="el-icon-upload"></i>
+                    <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                </el-upload>
+            </div>
+            <div v-show="!ifShow">
+                <el-table border stripe ref="multipleTable" :data="tableDataNew" tooltip-effect="dark"
+                    style="width: 100%" @selection-change="handleSelectionChange">
+                    <el-table-column type="selection" width="55">
+                    </el-table-column>
+                    <el-table-column label="产品名称" width="256">
+                        <template slot-scope="scope">{{ scope.row.product_name }}</template>
+                    </el-table-column>
+                    <el-table-column prop="price" label="零售价格" width="256">
+                    </el-table-column>
+                </el-table>
+                <div class="tableStyle">
+                    <el-pagination @current-change="handleCurrentChange" background layout="prev, pager, next"
+                        :page-size="rows" :total="tableData.length">
+                    </el-pagination>
+                </div>
+
+            </div>
+
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="dialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="handleSubmit">确 定</el-button>
+            </span>
+        </el-dialog>
+        <!-- 添加/编辑 弹窗 -->
+        <el-dialog :title="modalTitle" :visible.sync="modalVisible" width="40%">
+            <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+                <el-form-item label="中药名称" prop="product_name">
+                    <el-input v-model="ruleForm.product_name"></el-input>
+                </el-form-item>
+                <el-form-item label="零售价格" prop="price">
+                    <el-input v-model="ruleForm.price"></el-input>
+                </el-form-item>
+            </el-form>
+
+
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="modalVisible = false">取 消</el-button>
+                <el-button type="primary" @click="handleModalSubmit('ruleForm')">确 定</el-button>
+            </span>
+        </el-dialog>
+    </div>
+    <script type="module">
+        import { nanoid } from 'https://cdn.bootcdn.net/ajax/libs/nanoid/4.0.2/nanoid.min.js'
+        // 将vue挂载到id为app的根元素上
+        var vm = new Vue({
+            el: "#app",
+            data() {
+                return {
+                    msg: 'wyz',
+                    fileList: [],
+                    dataList: [],
+                    dialogVisible: false, // 上传弹窗
+                    ifShow: true, // 是否展示
+                    tableData: [],
+                    tableDataNew: [],
+                    tableDataAll: [],
+                    tableDataHome: [],
+                    multipleSelection: [],
+                    page: 1,
+                    rows: 10,
+                    pageHome: 1,
+                    totalHome: '',
+
+                    db: '',
+                    centerPrice: '',
+                    keyWord: '',
+                    selectDataList: [], // 选中的产品名称
+                    allPrice: 0,
+                    searchType: false,
+                    modalTitle: '',
+                    modalVisible: false,
+                    ruleForm: {
+                        product_name: '',
+                        price: ''
+                    },
+                    rules: {
+                        product_name: [
+                            { required: true, message: '请输入中药名称', trigger: 'blur' },
+                        ],
+                        price: [
+                            { required: true, message: '请输入零售价格', trigger: 'blur' },
+                        ],
+                    }
+                };
+            },
+            methods: {
+                submitForm(formName) {
+                    this.$refs[formName].validate((valid) => {
+                        if (valid) {
+                            alert('submit!');
+                        } else {
+                            console.log('error submit!!');
+                            return false;
+                        }
+                    });
+                },
+                async before(file) {
+                    this.fileList = [...this.fileList, file]
+                    const files = file
+                    if (!files) return
+                    // 读取FIle中的数据, 读取成二进制数据
+                    let data = await readFile(files)
+                    // 把二进制数据用 xlsx 读取出来
+                    const workbook = XLSX.read(data, { type: 'binary' })
+                    // 拿到解析出来的数据
+                    const worksheet = workbook.Sheets[workbook.SheetNames[0]]
+                    // 把解析好的数据转成json格式
+                    data = XLSX.utils.sheet_to_json(worksheet)
+                    // console.log(data,'datadatadatadata');
+                    // 把读取出来的数据变为可以传递给服务器的数据
+                    // const arr = []
+                    data.forEach(item => {
+                        // console.log(item,'itemitem');
+                        const obj = {}
+                        for (const key in character) {
+                            if (!character.hasOwnProperty(key)) break
+                            let v = character[key]
+                            const text = v.text
+                            const type = v.type
+                            v = item[text] || ''
+                            if (type === 'string') {
+                                v = String(v)
+                            } else if (type === 'number') {
+                                v = Number(v)
+                            }
+                            // console.log(key,v,'vvv')
+                            obj[key] = v
+                        }
+                        obj['id'] = nanoid()
+                        // console.log(obj,'objobj');
+                        this.dataList.push(obj)
+
+
+
+                    })
+                    // this.dataList.push(...arr)
+                    // console.log(this.dataList, '886');
+                    this.tableData = this.dataList
+                    this.tableDataNew = this.tableData.slice(0, 10)
+                    this.ifShow = false
+                },
+                handleUp() {
+                    this.dialogVisible = true
+                },
+                // 下载模板
+                handleDownload() {
+                    this.$confirm('确定下载模板吗?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        const fileUrl = './public/中药导入模板.xls' // 文件的URL地址
+                        const link = document.createElement('a');
+                        link.href = fileUrl;
+                        link.setAttribute('download', '中药导入模板.xls');
+                        link.click();
+                    }).catch(() => {
+                    });
+
+                },
+                // 清空数据
+                handleClearData() {
+                    this.$confirm('此操作将永久清空数据, 是否继续?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => {
+                        // console.log(this.tableDataAll);
+                        this.tableDataAll.map(item => {
+                            this.db.centerPrice.delete(item.id)
+                        })
+                        this.getDataList()
+                        this.$message({
+                            type: 'success',
+                            message: '数据已清空!'
+                        });
+                    }).catch(() => {
+                    });
+
+
+                    // this.db.centerPrice.deleteDatabase('price')
+
+                },
+                handleSearch() {
+                    this.pageHome = 1
+                    // if(this.searchType){
+
+                    // }
+                    if (this.keyWord == '') {
+                        this.pageHome = 1
+                        this.rows = 10
+                        this.searchType = false
+                        this.getDataList()
+                        return
+                    }
+                    this.searchType = true
+                    this.tableDataHome = []
+                    this.rows = 10
+                    // this.totalHome
+                    // this.db.centerPrice.orderBy('product_name').offset(0).limit(100).toArray()
+                    // console.log(this.db.centerPrice.where({product_name: '陈皮'}))
+                    this.tableDataAll.map(item => {
+                        if (item.product_name.match(this.keyWord)) {
+                            this.tableDataHome.push(item)
+                        }
+                    })
+                    this.tableDataHomeEmpty = this.tableDataHome
+                    this.totalHome = this.tableDataHome.length
+                    this.tableDataHome = this.tableDataHome.slice(0, this.rows)
+                    // console.log(this.tableDataHome);
+                    // 如何搜索的记录只有一条，那么直接添加到算价格区域
+                    if(this.tableDataHome.length == 1){
+                        this.handleAdd('666', this.tableDataHome[0])
+                    }
+                    this.keyWord = ''
+                },
+                handleReset() {
+                    this.keyWord = ''
+                    this.pageHome = 1
+                    this.rows = 10
+                    this.searchType = false
+                    this.getDataList()
+                },
+                // 添加单个
+                handleAddSingle() {
+                    this.ruleForm.product_name = ''
+                    this.ruleForm.price = ''
+                    this.modalTitle = '添加中药'
+                    this.modalVisible = true
+                },
+                handleModalClose() {
+                    this.$confirm('确认关闭？')
+                        .then(_ => {
+                            done();
+                        })
+                        .catch(_ => { });
+                },
+                handleModalSubmit(formName) {
+                    this.$refs[formName].validate((valid) => {
+                        if (valid) {
+                            if (this.modalTitle == '添加中药') {
+                                let obj = Object.assign(this.ruleForm, { id: nanoid() })
+                                this.addDb(obj)
+                                this.modalVisible = false
+                                this.$refs[formName].resetFields();
+                                this.getDataList()
+                                this.$message({
+                                    message: '添加成功！',
+                                    type: 'success'
+                                });
+                                // console.log(obj);
+                            } else {
+                                this.db.centerPrice.put(this.ruleForm)
+                                this.modalVisible = false
+                                this.$refs[formName].resetFields();
+                                this.getDataList()
+                                this.$message({
+                                    message: '修改成功！',
+                                    type: 'success'
+                                });
+                            }
+
+                        } else {
+                            console.log('error submit!!');
+                            return false;
+                        }
+                    });
+                },
+                /**数据库相关操作开始**/
+                openIDB() {
+                    this.db = new Dexie('price');
+                    this.db.version(1).stores({
+                        centerPrice: 'id,product_name,price',
+                    });
+
+                    //   let users: Table<StoreLevelData>
+                    var centerPrice
+                    centerPrice = this.db.table('centerPrice')
+                },
+                addDb(data) {
+                    this.db.centerPrice.add(data)
+                },
+
+                /**数据库相关操作结束**/
+
+                handleClose(done) {
+                    this.$confirm('确认关闭？')
+                        .then(_ => {
+                            done();
+                        })
+                        .catch(_ => { });
+                },
+                handleCurrentChange(val) {
+                    // console.log(`当前页: ${val}`);
+                    this.tableDataNew = this.tableData.slice(val * this.rows - this.rows, val * this.rows)
+                },
+                handleSelectionHomeChange() {
+
+                },
+                // 点击选中
+                handleSelectionChange(val) {
+                    this.multipleSelection = val;
+                },
+                handleSubmit() {
+                    // dialogVisible = false
+                    // console.log(this.multipleSelection);
+                    this.openIDB()
+                    this.tableData.map(item => {
+                        this.addDb(item)
+                    })
+                    this.dialogVisible = false
+                    this.tableData = []
+                    this.tableDataNew = []
+                    this.dataList = []
+                    this.ifShow = true
+
+                    this.getDataList()
+
+                },
+                // 获取数据库中的数据
+                getDataList() {
+                    this.db.centerPrice.offset((this.pageHome - 1) * this.rows).limit(10).toArray().then(res => {
+                        this.tableDataHome = res
+                    })
+                    this.db.centerPrice.count().then(res => {
+                        this.totalHome = res
+                    })
+                    this.db.centerPrice.offset(0).limit(99999).toArray().then(res => {
+                        this.tableDataAll = res
+                    })
+                    // this.tableDataAll
+                    // this.tableDataHome = (this.pageHome - 1)*this.rows).limit(10).toArray()
+                    // console.log(this.db.centerPrice.count());
+                },
+                handleHomeCurrentChange(val) {
+                    if (this.searchType) {
+                        this.tableDataHome = this.tableDataHomeEmpty.slice(val * this.rows - this.rows, val * this.rows)
+                        // console.log(this.tableDataHome);
+                        return
+                    }
+                    this.pageHome = val
+                    this.db.centerPrice.offset((this.pageHome - 1) * this.rows).limit(10).toArray().then(res => {
+                        this.tableDataHome = res
+                    })
+                },
+                handleAdd(index, rows) {
+                    // console.log(rows);
+                    this.selectDataList.push(Object.assign(rows, { 'weight': 105 }))
+                    // 数组对象去重
+                    this.selectDataList = this.selectDataList.filter((item, index) =>
+                        this.selectDataList.findIndex(i => i.id === item.id) === index);
+
+                    this.allPrice = 0
+                    this.selectDataList.map(item => {
+                        this.allPrice = this.allPrice + item.price * parseInt(item.weight == '' ? 0 : item.weight)
+                    })
+                    this.allPrice = this.allPrice.toFixed(2)
+                },
+                handleEdit(index, rows) {
+                    // console.log(rows);
+
+                    this.modalTitle = '编辑中药'
+                    this.modalVisible = true
+                    this.ruleForm = JSON.parse(JSON.stringify(rows))
+                    // console.log(scope, index, rows);
+                },
+                handleDelete(index, rows) {
+                    this.db.centerPrice.delete(rows.id)
+                    this.getDataList()
+                    this.$message({
+                        message: '删除成功！',
+                        type: 'success'
+                    });
+                },
+                changeValue() {
+                    this.$forceUpdate()
+                    this.allPrice = 0
+                    this.selectDataList.map(item => {
+                        this.allPrice = this.allPrice + item.price * parseInt(item.weight == '' ? 0 : item.weight)
+                    })
+                    this.allPrice = this.allPrice.toFixed(2)
+                    // this.allPrice = this.allPrice + parseInt(val)
+                },
+                handleSelectDel(item) {
+                    for (let i = 0; i < this.selectDataList.length; i++) {
+                        if (this.selectDataList[i].id == item.id) {
+                            this.selectDataList.splice(i, 1)
+                        }
+                    }
+                    this.allPrice = 0
+                    this.selectDataList.map(item => {
+                        this.allPrice = this.allPrice + item.price * parseInt(item.weight == '' ? 0 : item.weight)
+                    })
+                    this.allPrice = this.allPrice.toFixed(2)
+                },
+                handleDelAll() {
+                    this.selectDataList = []
+                    this.allPrice = 0
+                }
+            },
+            mounted() {
+                this.openIDB()
+                this.getDataList()
+            },
+            created() { },
+        });
+    </script>
+</body>
+
+</html>
