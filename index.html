@@ -45,7 +45,8 @@
             <div class="allPrice">
                 <span>总价：{{allPrice}}</span>
             </div>
-            <span style="position: absolute;right: 0;" v-show="userId">
+            {{userId}}
+            <span style="position: absolute;right: 0;" v-if="userId">
                 <el-button type="primary" @click="handleAddChuFang">添加处方</el-button>
             </span>
 
