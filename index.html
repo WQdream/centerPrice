@@ -517,7 +517,7 @@
             },
             mounted() {
                 window.addEventListener('message', (event) => {
-                    if(event.data.id){
+                    if(event.data.row.id){
                         this.userId = event.data.row.id
                         alert(this.userId)
                         console.log('接收到消息:', event.data.row);
