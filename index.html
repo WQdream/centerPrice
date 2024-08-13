@@ -45,6 +45,9 @@
                 <span>总价：{{allPrice}}</span>
 
             </div>
+            <span style="position: absolute;right: 0;">
+                <el-button type="primary" @click="handleAddChuFang">添加处方</el-button>
+            </span>
 
         </div>
 
@@ -192,6 +195,9 @@
                 };
             },
             methods: {
+                handleAddChuFang() {
+
+                },
                 submitForm(formName) {
                     this.$refs[formName].validate((valid) => {
                         if (valid) {
@@ -507,6 +513,11 @@
                 }
             },
             mounted() {
+                window.addEventListener('message', function (event) {
+                    alert(JSON.stringify(event.data))
+                    let message = event.data;
+                    console.log(message,'mmmmmmm'); // 输出: value1, value2
+                }, false);
                 this.openIDB()
                 this.getDataList()
             },
