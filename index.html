@@ -152,9 +152,6 @@
     </div>
     <script type="module">
         import { nanoid } from 'https://cdn.bootcdn.net/ajax/libs/nanoid/4.0.2/nanoid.min.js'
-        window.addEventListener('message', function(event) {
-    console.log('接收到消息:', event.data);
-}, false);
         // 将vue挂载到id为app的根元素上
         var vm = new Vue({
             el: "#app",
@@ -516,6 +513,9 @@
                 }
             },
             mounted() {
+                window.addEventListener('message', function (event) {
+                    console.log('接收到消息3:', event.data);
+                }, false);
                 this.openIDB()
                 this.getDataList()
             },
