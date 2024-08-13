@@ -24,7 +24,7 @@
     <link href="./css/index.css" rel="stylesheet">
 
     <script src="https://cdn.bootcdn.net/ajax/libs/dexie/3.2.4/dexie.min.js"></script>
-    <!-- <script src="https://cdn.bootcdn.net/ajax/libs/vue-router/4.4.3/vue-router.global.min.js"></script> -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue-router/4.4.3/vue-router.global.min.js"></script>
 
 
 </head>
@@ -45,7 +45,6 @@
             <div class="allPrice">
                 <span>总价：{{allPrice}}</span>
             </div>
-            {{userId}}
             <span style="position: absolute;right: 0;" v-if="userId">
                 <el-button type="primary" @click="handleAddChuFang">添加处方</el-button>
             </span>
@@ -182,6 +181,7 @@
                     modalTitle: '',
                     modalVisible: false,
                     userId:'',
+                    userData: {},
                     ruleForm: {
                         product_name: '',
                         price: ''
@@ -519,7 +519,7 @@
                 window.addEventListener('message', (event) => {
                     if(event.data.row.id){
                         this.userId = event.data.row.id
-                        alert(this.userId)
+                        this.userData = event.data.row
                         console.log('接收到消息:', event.data.row);
                     }
                 }, false);
