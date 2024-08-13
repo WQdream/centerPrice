@@ -45,7 +45,7 @@
             <div class="allPrice">
                 <span>总价：{{allPrice}}</span>
             </div>
-            <span style="position: absolute;right: 0;">
+            <span style="position: absolute;right: 0;" v-show="userId">
                 <el-button type="primary" @click="handleAddChuFang">添加处方</el-button>
             </span>
 
@@ -180,6 +180,7 @@
                     searchType: false,
                     modalTitle: '',
                     modalVisible: false,
+                    userId:'',
                     ruleForm: {
                         product_name: '',
                         price: ''
@@ -196,7 +197,8 @@
             },
             methods: {
                 handleAddChuFang() {
-
+                    console.log(this.selectDataList,'this.selectDataList');
+                    
                 },
                 submitForm(formName) {
                     this.$refs[formName].validate((valid) => {
@@ -514,7 +516,10 @@
             },
             mounted() {
                 window.addEventListener('message', function (event) {
-                    console.log('接收到消息3:', event.data);
+                    if(event.data.id){
+                        this.userId = event.data.id
+                        console.log('接收到消息:', event.data.id);
+                    }
                 }, false);
                 this.openIDB()
                 this.getDataList()
