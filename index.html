@@ -198,7 +198,7 @@
             methods: {
                 handleAddChuFang() {
                     console.log(this.selectDataList,'this.selectDataList');
-                    router.go(-1)
+                    window.parent.addChuFangChild(this.selectDataList);
                 },
                 submitForm(formName) {
                     this.$refs[formName].validate((valid) => {
