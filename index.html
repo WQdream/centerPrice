@@ -24,7 +24,7 @@
     <link href="./css/index.css" rel="stylesheet">
 
     <script src="https://cdn.bootcdn.net/ajax/libs/dexie/3.2.4/dexie.min.js"></script>
-
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue-router/4.4.3/vue-router.global.min.js"></script>
 
 
 </head>
@@ -199,7 +199,7 @@
             methods: {
                 handleAddChuFang() {
                     console.log(this.selectDataList,'this.selectDataList');
-                    
+                    router.go(-1)
                 },
                 submitForm(formName) {
                     this.$refs[formName].validate((valid) => {
@@ -518,10 +518,8 @@
             mounted() {
                 window.addEventListener('message', (event) => {
                     if(event.data.id){
-                        this.userId = event.data.id
-                        alert(this.userId)
-                        console.log(this.userId,'llllll');
-                        console.log('接收到消息:', event.data.id);
+                        this.userId = event.data.row.id
+                        console.log('接收到消息:', event.data.row);
                     }
                 }, false);
                 this.openIDB()
