@@ -45,9 +45,10 @@
                 <span>总价：{{allPrice}}</span>
             </div>
             <span style="position: absolute;right: 0;" v-if="userId">
-            <!-- <span style="position: absolute;right: 0;"> -->
-                <el-input @input="handleInputChange" v-model="pairs_count" placeholder="请输入一共几副药" class="keyWord"></el-input>
-                <el-button type="primary" @click="handleAddChuFang">添加处方</el-button>
+                <!-- <span style="position: absolute;right: 0;"> -->
+                <el-input @input="handleInputChange" v-model="pairs_count" placeholder="请输入一共几副药"
+                    class="keyWord"></el-input>
+                <el-button type="primary" @click="handleAddChuFangOne">添加处方</el-button>
             </span>
 
         </div>
@@ -150,6 +151,14 @@
                 <el-button type="primary" @click="handleModalSubmit('ruleForm')">确 定</el-button>
             </span>
         </el-dialog>
+        <!-- 填写开方时间和临床诊断 -->
+        <el-dialog title="提示" :visible.sync="lastVisible" width="30%" :before-close="handleClose">
+            <span>这是一段信息</span>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="lastVisible = false">取 消</el-button>
+                <el-button type="primary" @click="handleAddChuFang">确 定</el-button>
+            </span>
+        </el-dialog>
     </div>
     <script type="module">
         import { nanoid } from 'https://cdn.bootcdn.net/ajax/libs/nanoid/4.0.2/nanoid.min.js'
@@ -158,6 +167,7 @@
             el: "#app",
             data() {
                 return {
+                    lastVisible: false,
                     msg: 'wyz',
                     fileList: [],
                     dataList: [],
@@ -172,7 +182,7 @@
                     rows: 10,
                     pageHome: 1,
                     totalHome: '',
-                    pairs_count:1,
+                    pairs_count: 1,
                     db: '',
                     centerPrice: '',
                     keyWord: '',
@@ -181,7 +191,7 @@
                     searchType: false,
                     modalTitle: '',
                     modalVisible: false,
-                    userId:'',
+                    userId: '',
                     userData: {},
                     ruleForm: {
                         product_name: '',
@@ -198,11 +208,14 @@
                 };
             },
             methods: {
-                handleAddChuFang() {
-                    console.log(this.selectDataList,'this.selectDataList');
-                    window.parent.postMessage({from:'cmc',data:this.selectDataList,pairs_count: this.pairs_count},'*')
+                handleAddChuFangOne(){
+                    this.lastVisible = true
                 },
-                handleInputChange(val){
+                handleAddChuFang() {
+                    console.log(this.selectDataList, 'this.selectDataList');
+                    window.parent.postMessage({ from: 'cmc', data: this.selectDataList, pairs_count: this.pairs_count }, '*')
+                },
+                handleInputChange(val) {
                 },
                 submitForm(formName) {
                     this.$refs[formName].validate((valid) => {
@@ -520,7 +533,7 @@
             },
             mounted() {
                 window.addEventListener('message', (event) => {
-                    if(event.data.row.id){
+                    if (event.data.row.id) {
                         this.userId = event.data.row.id
                         this.userData = event.data.row
                         console.log('接收到消息:', event.data.row);
