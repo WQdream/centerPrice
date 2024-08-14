@@ -198,7 +198,7 @@
             methods: {
                 handleAddChuFang() {
                     console.log(this.selectDataList,'this.selectDataList');
-                    window.parent.addChuFangChild(this.selectDataList);
+                    window.parent.postMessage({from:'cmc'},'*')
                 },
                 submitForm(formName) {
                     this.$refs[formName].validate((valid) => {
