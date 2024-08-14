@@ -44,7 +44,9 @@
             <div class="allPrice">
                 <span>总价：{{allPrice}}</span>
             </div>
-            <span style="position: absolute;right: 0;" v-if="userId">
+            <!-- <span style="position: absolute;right: 0;" v-if="userId"> -->
+            <span style="position: absolute;right: 0;">
+                <el-input @input="handleInputChange" v-model="pairs_count" placeholder="请输入一共几副药" class="keyWord"></el-input>
                 <el-button type="primary" @click="handleAddChuFang">添加处方</el-button>
             </span>
 
@@ -170,7 +172,7 @@
                     rows: 10,
                     pageHome: 1,
                     totalHome: '',
-
+                    pairs_count:1,
                     db: '',
                     centerPrice: '',
                     keyWord: '',
@@ -198,7 +200,9 @@
             methods: {
                 handleAddChuFang() {
                     console.log(this.selectDataList,'this.selectDataList');
-                    window.parent.postMessage({from:'cmc'},'*')
+                    window.parent.postMessage({from:'cmc',data:this.selectDataList,pairs_count: this.pairs_count},'*')
+                },
+                handleInputChange(val){
                 },
                 submitForm(formName) {
                     this.$refs[formName].validate((valid) => {
