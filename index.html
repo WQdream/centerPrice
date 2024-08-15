@@ -152,8 +152,16 @@
             </span>
         </el-dialog>
         <!-- 填写开方时间和临床诊断 -->
-        <el-dialog title="提示" :visible.sync="lastVisible" width="30%" :before-close="handleClose">
-            <span>这是一段信息</span>
+        <el-dialog title="药方细节" :visible.sync="lastVisible" width="30%" :before-close="handleClose">
+            <el-form ref="formDetail" :rules="chuFangRules" :model="form" label-width="100px">
+                <el-form-item label="开方时间：" prop="timeDay">
+                    <el-date-picker style="width:100%" value-format="yyyy-MM-dd" v-model="form.timeDay" type="date" placeholder="选择日期">
+                    </el-date-picker>
+                </el-form-item>
+                <el-form-item label="临床诊断：">
+                    <el-input type="textarea" :rows="5" v-model="form.desc"></el-input>
+                </el-form-item>
+            </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="lastVisible = false">取 消</el-button>
                 <el-button type="primary" @click="handleAddChuFang">确 定</el-button>
@@ -167,7 +175,17 @@
             el: "#app",
             data() {
                 return {
+                    timeDay: '',
                     lastVisible: false,
+                    form: {
+                        timeDay: '',
+                        desc: ''
+                    },
+                    chuFangRules: {
+                        timeDay: [
+                            { required: true, message: '请选择日期', trigger: 'change' }
+                        ],
+                    },
                     msg: 'wyz',
                     fileList: [],
                     dataList: [],
@@ -208,12 +226,21 @@
                 };
             },
             methods: {
-                handleAddChuFangOne(){
+                handleAddChuFangOne() {
                     this.lastVisible = true
                 },
                 handleAddChuFang() {
+                    this.$refs['formDetail'].validate((valid) => {
+                        if (valid) {
+                            // alert(JSON.stringify(this.form))
+                            window.parent.postMessage({ from: 'cmc', data: this.selectDataList, pairs_count: this.pairs_count, timeDay: this.form.timeDay, desc: this.form.desc }, '*')
+                            
+                        } else {
+                            return false;
+                        }
+                    });
                     console.log(this.selectDataList, 'this.selectDataList');
-                    window.parent.postMessage({ from: 'cmc', data: this.selectDataList, pairs_count: this.pairs_count }, '*')
+                    
                 },
                 handleInputChange(val) {
                 },
