@@ -159,7 +159,7 @@
                     </el-date-picker>
                 </el-form-item>
                 <el-form-item label="数量：" prop="pairs_count">
-                    <el-input @input="handleInputChange" v-model="pairs_count" placeholder="请输入一共几副药"
+                    <el-input style="width:100%" v-model="form.pairs_count" placeholder="请输入一共几副药"
                     class="keyWord"></el-input>
                 </el-form-item>
                 
@@ -189,6 +189,7 @@
                         timeDay: '',
                         desc: '',
                         desc2: '',
+                        pairs_count:1
                     },
                     chuFangRules: {
                         timeDay: [
@@ -242,7 +243,7 @@
                     this.$refs['formDetail'].validate((valid) => {
                         if (valid) {
                             // alert(JSON.stringify(this.form))
-                            window.parent.postMessage({ from: 'cmc', data: this.selectDataList, pairs_count: this.pairs_count, timeDay: this.form.timeDay, desc: this.form.desc,desc2: this.form.desc2 }, '*')
+                            window.parent.postMessage({ from: 'cmc', data: this.selectDataList, pairs_count: this.form.pairs_count, timeDay: this.form.timeDay, desc: this.form.desc,desc2: this.form.desc2 }, '*')
                             
                         } else {
                             return false;
