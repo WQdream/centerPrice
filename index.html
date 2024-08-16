@@ -246,7 +246,7 @@
                     this.$refs['formDetail'].validate((valid) => {
                         if (valid) {
                             if(this.type == 'edit'){
-                                window.parent.postMessage({ type:'edit', from: 'cmc_edit', data: this.selectDataList, pairs_count: this.form.pairs_count, timeDay: this.form.timeDay, desc: this.form.desc, desc2: this.form.desc2 }, '*')
+                                window.parent.postMessage({ type:'edit', from: 'cmc_edit', data: this.selectDataList, pairs_count: this.form.pairs_count, timeDay: this.form.timeDay, desc: this.form.desc, desc2: this.form.desc2, id: this.form.id }, '*')
                             }else{
                                 window.parent.postMessage({ from: 'cmc', data: this.selectDataList, pairs_count: this.form.pairs_count, timeDay: this.form.timeDay, desc: this.form.desc, desc2: this.form.desc2 }, '*')
                             }
@@ -582,6 +582,7 @@
                         this.userData = JSON.parse(event.data.row.userData)
                         this.type = 'edit'
                         this.form = {
+                            id: event.data.row.id,
                             timeDay: event.data.row.timeDay,
                             desc: event.data.row.desc,
                             desc2: event.data.row.desc2,
