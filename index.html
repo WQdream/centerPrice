@@ -577,6 +577,7 @@
             mounted() {
                 window.addEventListener('message', (event) => {
                     if (event.data.row.type == 'edit') {
+                        console.log(event.data.row,'sssss');
                         this.userId = JSON.parse(event.data.row.userData).id
                         this.userData = JSON.parse(event.data.row.userData)
                         this.type = 'edit'
