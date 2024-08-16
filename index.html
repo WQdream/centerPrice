@@ -152,7 +152,7 @@
             </span>
         </el-dialog>
         <!-- 填写开方时间和临床诊断 -->
-        <el-dialog title="药方细节" :visible.sync="lastVisible" width="30%" :before-close="handleClose">
+        <el-dialog title="药方细节" :close-on-click-modal="false" :visible.sync="lastVisible" width="30%" :before-close="handleClose">
             <el-form ref="formDetail" :rules="chuFangRules" :model="form" label-width="100px">
                 <el-form-item label="开方时间：" prop="timeDay">
                     <el-date-picker style="width:100%" value-format="yyyy-MM-dd" v-model="form.timeDay" type="date" placeholder="选择日期">
