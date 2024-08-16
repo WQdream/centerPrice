@@ -572,7 +572,6 @@
             },
             mounted() {
                 window.addEventListener('message', (event) => {
-                    console.log(event.data, 'kkkkk');
                     if (event.data.row.type == 'edit') {
                         this.userId = JSON.parse(event.data.row.userData).id
                         this.userData = JSON.parse(event.data.row.userData)
@@ -585,8 +584,13 @@
                         event.data.row.data.map(item => {
                             this.selectDataList.push(JSON.parse(item))
                         })
-                        console.log(this.selectDataList,'kkkkk');
-                        
+                        // 计算总钱数
+                        this.allPrice = 0
+                        this.selectDataList.map(item => {
+                            this.allPrice = this.allPrice + item.price * parseInt(item.weight == '' ? 0 : item.weight)
+                        })
+                        this.allPrice = this.allPrice.toFixed(2)
+
                     }
                     if (event.data.row.type !== 'edit' && event.data.row.id) {
                         this.userId = event.data.row.id
