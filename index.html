@@ -152,17 +152,19 @@
             </span>
         </el-dialog>
         <!-- 填写开方时间和临床诊断 -->
-        <el-dialog title="药方细节" :close-on-click-modal="false" :visible.sync="lastVisible" width="30%" :before-close="handleClose">
+        <el-dialog title="药方细节" :close-on-click-modal="false" :visible.sync="lastVisible" width="30%"
+            :before-close="handleClose">
             <el-form ref="formDetail" :rules="chuFangRules" :model="form" label-width="100px">
                 <el-form-item label="开方时间：" prop="timeDay">
-                    <el-date-picker style="width:100%" value-format="yyyy-MM-dd" v-model="form.timeDay" type="date" placeholder="选择日期">
+                    <el-date-picker style="width:100%" value-format="yyyy-MM-dd" v-model="form.timeDay" type="date"
+                        placeholder="选择日期">
                     </el-date-picker>
                 </el-form-item>
                 <el-form-item label="数量：" prop="pairs_count">
                     <el-input style="width:100%" v-model="form.pairs_count" placeholder="请输入一共几副药"
-                    class="keyWord"></el-input>
+                        class="keyWord"></el-input>
                 </el-form-item>
-                
+
                 <el-form-item label="临床诊断：">
                     <el-input type="textarea" :rows="4" v-model="form.desc"></el-input>
                 </el-form-item>
@@ -189,7 +191,7 @@
                         timeDay: '',
                         desc: '',
                         desc2: '',
-                        pairs_count:1
+                        pairs_count: 1
                     },
                     chuFangRules: {
                         timeDay: [
@@ -243,14 +245,14 @@
                     this.$refs['formDetail'].validate((valid) => {
                         if (valid) {
                             // alert(JSON.stringify(this.form))
-                            window.parent.postMessage({ from: 'cmc', data: this.selectDataList, pairs_count: this.form.pairs_count, timeDay: this.form.timeDay, desc: this.form.desc,desc2: this.form.desc2 }, '*')
-                            
+                            window.parent.postMessage({ from: 'cmc', data: this.selectDataList, pairs_count: this.form.pairs_count, timeDay: this.form.timeDay, desc: this.form.desc, desc2: this.form.desc2 }, '*')
+
                         } else {
                             return false;
                         }
                     });
                     console.log(this.selectDataList, 'this.selectDataList');
-                    
+
                 },
                 handleInputChange(val) {
                 },
@@ -570,11 +572,20 @@
             },
             mounted() {
                 window.addEventListener('message', (event) => {
-                    console.log(event.data,'kkkkk');
-                    if(event.data.type == 'edit'){
-
+                    console.log(event.data, 'kkkkk');
+                    if (event.data.row.type == 'edit') {
+                        this.form = {
+                            timeDay: event.data.row.timeDay,
+                            desc: event.data.row.desc,
+                            desc2: event.data.row.desc2,
+                            pairs_count: event.data.row.pairs_count
+                        }
+                        event.data.row.data.map(item => {
+                            this.selectDataList.push(JSON.parse(item))
+                        })
+                        
                     }
-                    if (event.data.row.id) {
+                    if (event.data.row.type !== 'edit' && event.data.row.id) {
                         this.userId = event.data.row.id
                         this.userData = event.data.row
                         console.log('接收到消息:', event.data.row);
