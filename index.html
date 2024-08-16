@@ -246,7 +246,7 @@
                     this.$refs['formDetail'].validate((valid) => {
                         if (valid) {
                             if(type == 'edit'){
-                                window.parent.postMessage({ type:'edit', from: 'cmc', data: this.selectDataList, pairs_count: this.form.pairs_count, timeDay: this.form.timeDay, desc: this.form.desc, desc2: this.form.desc2 }, '*')
+                                window.parent.postMessage({ type:'edit', from: 'cmc_edit', data: this.selectDataList, pairs_count: this.form.pairs_count, timeDay: this.form.timeDay, desc: this.form.desc, desc2: this.form.desc2 }, '*')
                             }else{
                                 window.parent.postMessage({ from: 'cmc', data: this.selectDataList, pairs_count: this.form.pairs_count, timeDay: this.form.timeDay, desc: this.form.desc, desc2: this.form.desc2 }, '*')
                             }
