@@ -48,7 +48,7 @@
                 <!-- <span style="position: absolute;right: 0;"> -->
                 <!-- <el-input @input="handleInputChange" v-model="pairs_count" placeholder="请输入一共几副药"
                     class="keyWord"></el-input> -->
-                <el-button type="primary" @click="handleAddChuFangOne">添加处方</el-button>
+                <el-button type="primary" @click="handleAddChuFangOne">{{ type == 'edit'?'修改处方':'添加处方' }}</el-button>
             </span>
 
         </div>
@@ -208,6 +208,7 @@
                     tableDataAll: [],
                     tableDataHome: [],
                     multipleSelection: [],
+                    type: '',
                     page: 1,
                     rows: 10,
                     pageHome: 1,
@@ -244,8 +245,11 @@
                 handleAddChuFang() {
                     this.$refs['formDetail'].validate((valid) => {
                         if (valid) {
-                            // alert(JSON.stringify(this.form))
-                            window.parent.postMessage({ from: 'cmc', data: this.selectDataList, pairs_count: this.form.pairs_count, timeDay: this.form.timeDay, desc: this.form.desc, desc2: this.form.desc2 }, '*')
+                            if(type == 'edit'){
+                                window.parent.postMessage({ type:'edit', from: 'cmc', data: this.selectDataList, pairs_count: this.form.pairs_count, timeDay: this.form.timeDay, desc: this.form.desc, desc2: this.form.desc2 }, '*')
+                            }else{
+                                window.parent.postMessage({ from: 'cmc', data: this.selectDataList, pairs_count: this.form.pairs_count, timeDay: this.form.timeDay, desc: this.form.desc, desc2: this.form.desc2 }, '*')
+                            }
 
                         } else {
                             return false;
@@ -575,6 +579,7 @@
                     if (event.data.row.type == 'edit') {
                         this.userId = JSON.parse(event.data.row.userData).id
                         this.userData = JSON.parse(event.data.row.userData)
+                        this.type = 'edit'
                         this.form = {
                             timeDay: event.data.row.timeDay,
                             desc: event.data.row.desc,
