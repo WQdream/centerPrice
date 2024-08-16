@@ -161,6 +161,9 @@
                 <el-form-item label="临床诊断：">
                     <el-input type="textarea" :rows="5" v-model="form.desc"></el-input>
                 </el-form-item>
+                <el-form-item label="备注：">
+                    <el-input type="textarea" :rows="5" v-model="form.desc2"></el-input>
+                </el-form-item>
             </el-form>
             <span slot="footer" class="dialog-footer">
                 <el-button @click="lastVisible = false">取 消</el-button>
@@ -179,7 +182,8 @@
                     lastVisible: false,
                     form: {
                         timeDay: '',
-                        desc: ''
+                        desc: '',
+                        desc2: '',
                     },
                     chuFangRules: {
                         timeDay: [
@@ -233,7 +237,7 @@
                     this.$refs['formDetail'].validate((valid) => {
                         if (valid) {
                             // alert(JSON.stringify(this.form))
-                            window.parent.postMessage({ from: 'cmc', data: this.selectDataList, pairs_count: this.pairs_count, timeDay: this.form.timeDay, desc: this.form.desc }, '*')
+                            window.parent.postMessage({ from: 'cmc', data: this.selectDataList, pairs_count: this.pairs_count, timeDay: this.form.timeDay, desc: this.form.desc,desc2: this.form.desc2 }, '*')
                             
                         } else {
                             return false;
