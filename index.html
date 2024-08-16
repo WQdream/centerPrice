@@ -570,6 +570,10 @@
             },
             mounted() {
                 window.addEventListener('message', (event) => {
+                    console.log(event.data,'kkkkk');
+                    if(event.data.type == 'edit'){
+
+                    }
                     if (event.data.row.id) {
                         this.userId = event.data.row.id
                         this.userData = event.data.row
