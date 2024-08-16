@@ -574,8 +574,8 @@
                 window.addEventListener('message', (event) => {
                     console.log(event.data, 'kkkkk');
                     if (event.data.row.type == 'edit') {
-                        this.userId = event.data.row.userData.id
-                        this.userData = event.data.row.userData
+                        this.userId = JSON.parse(event.data.row.userData).id
+                        this.userData = JSON.parse(event.data.row.userData)
                         this.form = {
                             timeDay: event.data.row.timeDay,
                             desc: event.data.row.desc,
