@@ -39,6 +39,7 @@
             <el-button type="primary" @click="handleAddSingle">添加</el-button>
             <el-button type="primary" @click="handleUp">上传文件</el-button>
             <el-button @click="handleDownload">下载模板</el-button>
+            <el-button type="primary" @click="handleChufangImport">处方导入</el-button>
             <el-button type="danger" @click="handleClearData">清空数据</el-button>
 
             <div class="allPrice">
@@ -357,6 +358,63 @@
                     // this.db.centerPrice.deleteDatabase('price')
 
                 },
+                // 处方导入
+                handleChufangImport() {
+                    this.$prompt('', '处方导入', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        inputType: 'textarea',
+                        inputPlaceholder: '请在此处粘贴药方数据（JSON格式）'
+                    }).then(({ value }) => {
+                        if (value) {
+                            try {
+                                const drugs = JSON.parse(value);
+                                if (!Array.isArray(drugs)) {
+                                    throw new Error('输入数据格式错误，请确保是正确的JSON数组格式');
+                                }
+
+                                let hasInvalidUnit = false;
+                                drugs.forEach(drug => {
+                                    if (!drug.name || !drug.weight || !drug.unit) {
+                                        throw new Error('药品数据格式不完整，请确保包含name、weight和unit字段');
+                                    }
+                                    if (drug.unit.toLowerCase() !== 'g') {
+                                        hasInvalidUnit = true;
+                                        return;
+                                    }
+                                    // 在数据库中搜索药品
+                                    this.tableDataAll.forEach(item => {
+                                        if (item.product_name === drug.name) {
+                                            const newItem = { ...item };
+                                            newItem.weight = parseFloat(drug.weight);
+                                            newItem.ke = parseFloat(drug.weight);
+                                            console.log(newItem,'newItemnewItem');
+                                            
+                                            this.handleAdd('', newItem);
+                                        }
+                                    });
+                                });
+
+                                if (hasInvalidUnit) {
+                                    this.$message({
+                                        type: 'warning',
+                                        message: '部分药品单位不是g，已被跳过'
+                                    });
+                                }
+                            } catch (error) {
+                                this.$message({
+                                    type: 'error',
+                                    message: error.message || 'JSON解析错误，请检查输入格式'
+                                });
+                            }
+                        }
+                    }).catch(() => {
+                        this.$message({
+                            type: 'info',
+                            message: '取消输入'
+                        });
+                    });
+                },
                 handleSearch() {
                     this.pageHome = 1
                     // if(this.searchType){
@@ -520,8 +578,8 @@
                     })
                 },
                 handleAdd(index, rows) {
-                    // console.log(rows);
-                    this.selectDataList.push(Object.assign(rows, { 'weight': 105 }))
+                    console.log(rows,'rowrow');
+                    this.selectDataList.push(Object.assign(rows, { 'weight': rows.weight?rows.weight: 105 }))
                     // 数组对象去重
                     this.selectDataList = this.selectDataList.filter((item, index) =>
                         this.selectDataList.findIndex(i => i.id === item.id) === index);
