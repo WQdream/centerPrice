@@ -26,25 +26,32 @@
     <script src="https://cdn.bootcdn.net/ajax/libs/dexie/3.2.4/dexie.min.js"></script>
 
 
-
 </head>
 
 <body>
     <!-- 创建一个根元素 -->
     <div class="app" id="app">
         <div class="tool">
-            <el-input v-model="keyWord" placeholder="请输入内容" class="keyWord" @keyup.enter.native="handleSearch"></el-input>
+            <el-input v-model="keyWord" placeholder="请输入内容" class="keyWord"
+                @keyup.enter.native="handleSearch"></el-input>
             <el-button type="warning" @click="handleSearch">搜索</el-button>
             <el-button type="warning" @click="handleReset">重置</el-button>
             <el-button type="primary" @click="handleAddSingle">添加</el-button>
             <el-button type="primary" @click="handleUp">上传文件</el-button>
             <el-button @click="handleDownload">下载模板</el-button>
+            <el-button type="primary" @click="handleChufangImport">处方导入</el-button>
             <el-button type="danger" @click="handleClearData">清空数据</el-button>
 
             <div class="allPrice">
                 <span style="margin-right: 50px;">总克数：{{ handleAllWeight() }}</span>
                 <span>总价：{{allPrice}}</span>
             </div>
+            <span style="position: absolute;right: 0;" v-if="userId">
+                <!-- <span style="position: absolute;right: 0;"> -->
+                <!-- <el-input @input="handleInputChange" v-model="pairs_count" placeholder="请输入一共几副药"
+                    class="keyWord"></el-input> -->
+                <el-button type="primary" @click="handleAddChuFangOne">{{ type == 'edit'?'修改处方':'添加处方' }}</el-button>
+            </span>
 
         </div>
 
@@ -146,14 +153,53 @@
                 <el-button type="primary" @click="handleModalSubmit('ruleForm')">确 定</el-button>
             </span>
         </el-dialog>
+        <!-- 填写开方时间和临床诊断 -->
+        <el-dialog title="药方细节" :close-on-click-modal="false" :visible.sync="lastVisible" width="30%"
+            :before-close="handleClose">
+            <el-form ref="formDetail" :rules="chuFangRules" :model="form" label-width="100px">
+                <el-form-item label="开方时间：" prop="timeDay">
+                    <el-date-picker style="width:100%" value-format="yyyy-MM-dd" v-model="form.timeDay" type="date"
+                        placeholder="选择日期">
+                    </el-date-picker>
+                </el-form-item>
+                <el-form-item label="数量：" prop="pairs_count">
+                    <el-input style="width:100%" v-model="form.pairs_count" placeholder="请输入一共几副药"
+                        class="keyWord"></el-input>
+                </el-form-item>
+
+                <el-form-item label="临床诊断：">
+                    <el-input type="textarea" :rows="4" v-model="form.desc"></el-input>
+                </el-form-item>
+                <el-form-item label="备注：">
+                    <el-input type="textarea" :rows="3" v-model="form.desc2"></el-input>
+                </el-form-item>
+            </el-form>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="lastVisible = false">取 消</el-button>
+                <el-button type="primary" @click="handleAddChuFang">确 定</el-button>
+            </span>
+        </el-dialog>
     </div>
     <script type="module">
-        import { nanoid } from 'https://lib.baomitu.com/nanoid/5.0.7/nanoid.min.js'
+        import { nanoid } from 'https://cdn.bootcdn.net/ajax/libs/nanoid/4.0.2/nanoid.min.js'
         // 将vue挂载到id为app的根元素上
         var vm = new Vue({
             el: "#app",
             data() {
                 return {
+                    timeDay: '',
+                    lastVisible: false,
+                    form: {
+                        timeDay: '',
+                        desc: '',
+                        desc2: '',
+                        pairs_count: 1
+                    },
+                    chuFangRules: {
+                        timeDay: [
+                            { required: true, message: '请选择日期', trigger: 'change' }
+                        ],
+                    },
                     msg: 'wyz',
                     fileList: [],
                     dataList: [],
@@ -164,11 +210,12 @@
                     tableDataAll: [],
                     tableDataHome: [],
                     multipleSelection: [],
+                    type: '',
                     page: 1,
                     rows: 10,
                     pageHome: 1,
                     totalHome: '',
-
+                    pairs_count: 1,
                     db: '',
                     centerPrice: '',
                     keyWord: '',
@@ -177,6 +224,8 @@
                     searchType: false,
                     modalTitle: '',
                     modalVisible: false,
+                    userId: '',
+                    userData: {},
                     ruleForm: {
                         product_name: '',
                         price: ''
@@ -198,6 +247,27 @@
                         allWeight = allWeight + parseInt(item.weight == '' ? 0 : item.weight)
                     })
                     return allWeight
+                },
+                handleAddChuFangOne() {
+                    this.lastVisible = true
+                },
+                handleAddChuFang() {
+                    this.$refs['formDetail'].validate((valid) => {
+                        if (valid) {
+                            if(this.type == 'edit'){
+                                window.parent.postMessage({ type:'edit', from: 'cmc_edit', data: this.selectDataList, pairs_count: this.form.pairs_count, timeDay: this.form.timeDay, desc: this.form.desc, desc2: this.form.desc2, id: this.form.id }, '*')
+                            }else{
+                                window.parent.postMessage({ from: 'cmc', data: this.selectDataList, pairs_count: this.form.pairs_count, timeDay: this.form.timeDay, desc: this.form.desc, desc2: this.form.desc2 }, '*')
+                            }
+
+                        } else {
+                            return false;
+                        }
+                    });
+                    console.log(this.selectDataList, 'this.selectDataList');
+
+                },
+                handleInputChange(val) {
                 },
                 submitForm(formName) {
                     this.$refs[formName].validate((valid) => {
@@ -296,6 +366,63 @@
                     // this.db.centerPrice.deleteDatabase('price')
 
                 },
+                // 处方导入
+                handleChufangImport() {
+                    this.$prompt('', '处方导入', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        inputType: 'textarea',
+                        inputPlaceholder: '请在此处粘贴药方数据（JSON格式）'
+                    }).then(({ value }) => {
+                        if (value) {
+                            try {
+                                const drugs = JSON.parse(value);
+                                if (!Array.isArray(drugs)) {
+                                    throw new Error('输入数据格式错误，请确保是正确的JSON数组格式');
+                                }
+
+                                let hasInvalidUnit = false;
+                                drugs.forEach(drug => {
+                                    if (!drug.name || !drug.weight || !drug.unit) {
+                                        throw new Error('药品数据格式不完整，请确保包含name、weight和unit字段');
+                                    }
+                                    if (drug.unit.toLowerCase() !== 'g') {
+                                        hasInvalidUnit = true;
+                                        return;
+                                    }
+                                    // 在数据库中搜索药品
+                                    this.tableDataAll.forEach(item => {
+                                        if (item.product_name === drug.name) {
+                                            const newItem = { ...item };
+                                            newItem.weight = parseFloat(drug.weight);
+                                            newItem.ke = parseFloat(drug.weight);
+                                            console.log(newItem,'newItemnewItem');
+                                            
+                                            this.handleAdd('', newItem);
+                                        }
+                                    });
+                                });
+
+                                if (hasInvalidUnit) {
+                                    this.$message({
+                                        type: 'warning',
+                                        message: '部分药品单位不是g，已被跳过'
+                                    });
+                                }
+                            } catch (error) {
+                                this.$message({
+                                    type: 'error',
+                                    message: error.message || 'JSON解析错误，请检查输入格式'
+                                });
+                            }
+                        }
+                    }).catch(() => {
+                        this.$message({
+                            type: 'info',
+                            message: '取消输入'
+                        });
+                    });
+                },
                 handleSearch() {
                     this.pageHome = 1
                     // if(this.searchType){
@@ -324,7 +451,7 @@
                     this.tableDataHome = this.tableDataHome.slice(0, this.rows)
                     // console.log(this.tableDataHome);
                     // 如何搜索的记录只有一条，那么直接添加到算价格区域
-                    if(this.tableDataHome.length == 1){
+                    if (this.tableDataHome.length == 1) {
                         this.handleAdd('666', this.tableDataHome[0])
                     }
                     this.keyWord = ''
@@ -459,8 +586,8 @@
                     })
                 },
                 handleAdd(index, rows) {
-                    // console.log(rows);
-                    this.selectDataList.push(Object.assign(rows, { 'weight': 105 }))
+                    console.log(rows,'rowrow');
+                    this.selectDataList.push(Object.assign(rows, { 'weight': rows.weight?rows.weight: 105 }))
                     // 数组对象去重
                     this.selectDataList = this.selectDataList.filter((item, index) =>
                         this.selectDataList.findIndex(i => i.id === item.id) === index);
@@ -514,6 +641,36 @@
                 }
             },
             mounted() {
+                window.addEventListener('message', (event) => {
+                    if (event.data.row.type == 'edit') {
+                        console.log(event.data.row,'sssss');
+                        this.userId = JSON.parse(event.data.row.userData).id
+                        this.userData = JSON.parse(event.data.row.userData)
+                        this.type = 'edit'
+                        this.form = {
+                            id: event.data.row.id,
+                            timeDay: event.data.row.timeDay,
+                            desc: event.data.row.desc,
+                            desc2: event.data.row.desc2,
+                            pairs_count: event.data.row.pairs_count
+                        }
+                        event.data.row.data.map(item => {
+                            this.selectDataList.push(JSON.parse(item))
+                        })
+                        // 计算总钱数
+                        this.allPrice = 0
+                        this.selectDataList.map(item => {
+                            this.allPrice = this.allPrice + item.price * parseInt(item.weight == '' ? 0 : item.weight)
+                        })
+                        this.allPrice = this.allPrice.toFixed(2)
+
+                    }
+                    if (event.data.row.type !== 'edit' && event.data.row.id) {
+                        this.userId = event.data.row.id
+                        this.userData = event.data.row
+                        console.log('接收到消息:', event.data.row);
+                    }
+                }, false);
                 this.openIDB()
                 this.getDataList()
             },
