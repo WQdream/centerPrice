@@ -42,8 +42,8 @@
             <el-button type="danger" @click="handleClearData">清空数据</el-button>
 
             <div class="allPrice">
+                <span style="margin-right: 50px;">总克数：{{ handleAllWeight() }}</span>
                 <span>总价：{{allPrice}}</span>
-
             </div>
 
         </div>
@@ -192,6 +192,13 @@
                 };
             },
             methods: {
+                handleAllWeight(){
+                    let allWeight = 0
+                    this.selectDataList.map(item => {
+                        allWeight = allWeight + parseInt(item.weight == '' ? 0 : item.weight)
+                    })
+                    return allWeight
+                },
                 submitForm(formName) {
                     this.$refs[formName].validate((valid) => {
                         if (valid) {
